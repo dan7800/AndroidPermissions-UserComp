@@ -1,44 +1,96 @@
-#MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
-# Initialize Boilerplate
-#WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+# Initialize Boilerplate ----
 source("boilerplate.R")
 
-#MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
-# Distributions
-#WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+## Overall Rating of the Application ====
+title <- "Distribution of Overall Rating"
 
-#MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
-# Number of Question
-title <- "Distribution of Correctness"
+## Query Data
+dataset <- GetRatings() %>%
+  rename(value = rating)
 
-######################################
-# Query Data
-######################################
-dataset <- get.correctness() %>%
-  mutate(precision = (tp / (tp + fp)), recall = (tp / (tp + fn))) %>%
-  mutate(f = (2 * precision * recall / (precision + recall)))
+## Plot
+plot.dataset <- dataset
 
-######################################
-# Plot
-######################################
-plot.dataset <- dataset %>%
-  select(type, recall, precision, f) %>%
-  melt(.)
-plot.dataset$variable <- factor(
-  plot.dataset$variable, levels = c('precision', 'recall', 'f')
-)
-
-#XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-# Box Plot
-
-# File Name           bxcorrectness
-# Export Resolution   1800 x 700
-ggplot(plot.dataset, aes(x = type, y = value, fill = variable)) +
+png("diagrams/bxratings.png", width = 500, height = 600)
+ggplot(plot.dataset, aes(x = version, y = value, fill = version)) +
   geom_violin(alpha = 0.25) +
   geom_boxplot(width = 0.1) +
-  scale_x_discrete(labels = APPTYPE.LABLES) +
-  scale_y_continuous(labels = scales::percent) +
-  facet_grid( ~ variable, labeller = as_labeller(METRIC.LABELS)) +
-  labs(title = title, x = "Application Type", y = "Metric Value") +
+  scale_x_discrete(labels = VERSION.LABLES) +
+  labs(title = title, x = "Version", y = "Rating") +
   get.theme() +
   theme(legend.position = "none")
+dev.off()
+
+## Users' Perception of Security ====
+title <- "Distribution of Users' Perception of Security"
+
+## Query Data
+dataset <- GetPerception() %>%
+  rename(value = perception)
+
+## Plot
+plot.dataset <- dataset
+
+png("diagrams/bxperception.png", width = 500, height = 600)
+ggplot(plot.dataset, aes(x = version, y = value, fill = version)) +
+  geom_violin(alpha = 0.25) +
+  geom_boxplot(width = 0.1) +
+  scale_x_discrete(labels = VERSION.LABLES) +
+  labs(title = title, x = "Version", y = "Perception") +
+  get.theme() +
+  theme(legend.position = "none")
+dev.off()
+
+## Correctness ====
+title <- "Distribution of Correctness"
+
+## Query Data
+dataset <- GetCorrectness() %>%
+  mutate(precision = tp / (tp + fp)) %>%
+  mutate(recall = tp / (tp + fn)) %>%
+  mutate(f = 2 * precision * recall / (precision + recall)) %>%
+  select(version, precision, recall, f)
+
+## Plot
+plot.dataset <- dataset %>%
+  na.omit(.) %>%
+  melt(., id.vars = c("version"))
+
+png("diagrams/bxcorrectness.png", width = 1500, height = 600)
+ggplot(plot.dataset, aes(x = version, y = value, fill = version)) +
+  geom_violin(alpha = 0.25) +
+  geom_boxplot(width = 0.1) +
+  scale_x_discrete(labels = VERSION.LABLES) +
+  scale_y_continuous(labels = scales::percent) +
+  facet_wrap(~ variable, labeller = as_labeller(METRIC.LABELS)) +
+  labs(title = title, x = "Version", y = "Metric Value") +
+  get.theme() +
+  theme(legend.position = "none")
+dev.off()
+
+## Correctness: Random Sample ====
+title <- "Distribution of Correctness (Random)"
+
+## Query Data
+dataset <- GetRandomCorrectness() %>%
+  mutate(precision = tp / (tp + fp)) %>%
+  mutate(recall = tp / (tp + fn)) %>%
+  mutate(f = 2 * precision * recall / (precision + recall)) %>%
+  select(version, precision, recall, f)
+
+## Plot
+plot.dataset <- dataset %>%
+  na.omit(.) %>%
+  melt(., id.vars = c("version"))
+
+png("diagrams/bxrandomcorrectness.png", width = 1500, height = 600)
+ggplot(plot.dataset, aes(x = version, y = value, fill = version)) +
+  geom_violin(alpha = 0.25) +
+  geom_boxplot(width = 0.1) +
+  scale_x_discrete(labels = VERSION.LABLES) +
+  scale_y_continuous(labels = scales::percent) +
+  facet_wrap(~ variable, labeller = as_labeller(METRIC.LABELS)) +
+  labs(title = title, x = "Version", y = "Metric Value") +
+  get.theme() +
+  theme(legend.position = "none")
+dev.off()

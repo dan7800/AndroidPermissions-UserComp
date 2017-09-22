@@ -1,0 +1,3 @@
+# Ignore file that could potentially contain sensitive information that should
+# NEVER be pushed upstream
+/db.settings.R
